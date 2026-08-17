@@ -1,0 +1,120 @@
+{
+  "info": {
+    "_postman_id": "5fa8f6a0-bb1a-4f6f-ae5f-202608170001",
+    "name": "ProxySmart Tools Center — Public API Examples",
+    "description": "Public, rate-limited examples for IP information, proxy format validation, DNS lookup and IPv4 blacklist signals. Documentation: https://proxysmart.net/tools?utm_source=postman&utm_medium=collection&utm_campaign=tools_center",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": { "type": "noauth" },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Public endpoints require no API key. Never paste real proxy credentials into a shared workspace."
+        ]
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "https://proxysmart.net", "type": "string" },
+    { "key": "publicIp", "value": "8.8.8.8", "type": "string" },
+    { "key": "domain", "value": "proxysmart.net", "type": "string" },
+    { "key": "recordType", "value": "A", "type": "string" },
+    { "key": "proxyExample", "value": "203.0.113.10:8080:demo:example", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1. Check public IP information",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/tools/ip?value={{publicIp}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "tools", "ip"],
+          "query": [{ "key": "value", "value": "{{publicIp}}", "description": "Optional public IPv4 or IPv6 address." }]
+        },
+        "description": "Returns IP type, location, ISP, ASN and a reputation signal. Open the visual tool: https://proxysmart.net/tools/kiem-tra-ip?utm_source=postman&utm_medium=collection&utm_campaign=tools_center"
+      },
+      "response": [],
+      "event": [{
+        "listen": "test",
+        "script": { "type": "text/javascript", "exec": [
+          "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+          "pm.test('Response contains an IP', () => pm.expect(pm.response.json().ip).to.be.a('string'));"
+        ] }
+      }]
+    },
+    {
+      "name": "2. Validate proxy format safely",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\n  \"proxy\": \"{{proxyExample}}\"\n}", "options": { "raw": { "language": "json" } } },
+        "url": { "raw": "{{baseUrl}}/api/tools/proxy", "host": ["{{baseUrl}}"], "path": ["api", "tools", "proxy"] },
+        "description": "Checks syntax only. It does not connect to the proxy or measure speed, and credentials are not echoed in the response. Use documentation-only values in shared workspaces. Visual tool: https://proxysmart.net/tools/kiem-tra-proxy?utm_source=postman&utm_medium=collection&utm_campaign=tools_center"
+      },
+      "response": [],
+      "event": [{
+        "listen": "test",
+        "script": { "type": "text/javascript", "exec": [
+          "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+          "pm.test('Format-only mode', () => pm.expect(pm.response.json().result.checkType).to.eql('format_only'));",
+          "pm.test('Credentials are not echoed', () => pm.expect(pm.response.text()).not.to.include('demo:example'));"
+        ] }
+      }]
+    },
+    {
+      "name": "3. Query DNS records",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/tools/dns?value={{domain}}&type={{recordType}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "tools", "dns"],
+          "query": [
+            { "key": "value", "value": "{{domain}}" },
+            { "key": "type", "value": "{{recordType}}", "description": "A, AAAA, CNAME, MX, TXT or NS." }
+          ]
+        },
+        "description": "Returns matching DNS answers and TTL values. Visual tool: https://proxysmart.net/tools/kiem-tra-dns?utm_source=postman&utm_medium=collection&utm_campaign=tools_center"
+      },
+      "response": [],
+      "event": [{
+        "listen": "test",
+        "script": { "type": "text/javascript", "exec": [
+          "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+          "pm.test('Record type matches request', () => pm.expect(pm.response.json().result.recordType).to.eql(pm.collectionVariables.get('recordType')));"
+        ] }
+      }]
+    },
+    {
+      "name": "4. Check IPv4 blacklist signals",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": {
+          "raw": "{{baseUrl}}/api/tools/blacklist?value={{publicIp}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "tools", "blacklist"],
+          "query": [{ "key": "value", "value": "{{publicIp}}", "description": "Public IPv4 only." }]
+        },
+        "description": "Compares signals from available providers. Unavailable sources remain unknown and are never silently treated as clean. Visual tool: https://proxysmart.net/tools/kiem-tra-blacklist?utm_source=postman&utm_medium=collection&utm_campaign=tools_center"
+      },
+      "response": [],
+      "event": [{
+        "listen": "test",
+        "script": { "type": "text/javascript", "exec": [
+          "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+          "pm.test('Provider status is explicit', () => pm.expect(['listed', 'clean', 'unknown']).to.include(pm.response.json().result.providerStatus));"
+        ] }
+      }]
+    }
+  ]
+}
