@@ -19,7 +19,7 @@ The project demonstrates safe request timeouts, structured errors and secret-saf
 ## Quick start
 
 ```bash
-git clone https://github.com/ProxySmart/proxysmart-tools-nodejs.git
+git clone https://github.com/proxysmartnet/proxysmart-tools-nodejs.git
 cd proxysmart-tools-nodejs
 npm test
 node src/cli.mjs --help
@@ -77,8 +77,8 @@ console.log(result);
 
 ## Postman and video walkthrough
 
-- Public Postman collection: will be linked here after publication.
-- Video walkthrough: will be linked here after publication.
+- [Public Postman documentation](https://documenter.getpostman.com/view/57381650/2sBYApztDT)
+- [Video walkthrough on YouTube](https://youtu.be/iZ4_Efg5QE8)
 
 ## Security notes
 
